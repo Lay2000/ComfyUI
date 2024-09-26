@@ -110,6 +110,7 @@ class ModelPatcher:
         self.offload_device = offload_device
         self.weight_inplace_update = weight_inplace_update
         self.patches_uuid = uuid.uuid4()
+        self.lora_cache = {}
 
         if not hasattr(self.model, 'model_loaded_weight_memory'):
             self.model.model_loaded_weight_memory = 0
@@ -143,6 +144,7 @@ class ModelPatcher:
         n.model_options = copy.deepcopy(self.model_options)
         n.backup = self.backup
         n.object_patches_backup = self.object_patches_backup
+        n.lora_cache = copy.copy(self.lora_cache)
         return n
 
     def is_clone(self, other):

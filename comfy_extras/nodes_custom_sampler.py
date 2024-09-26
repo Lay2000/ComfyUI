@@ -609,6 +609,13 @@ class SamplerCustomAdvanced:
         callback = latent_preview.prepare_callback(guider.model_patcher, sigmas.shape[-1] - 1, x0_output)
 
         disable_pbar = not comfy.utils.PROGRESS_BAR_ENABLED
+
+        if hasattr(guider.model_patcher.model.diffusion_model, 'clean_lora'):
+            guider.model_patcher.model.diffusion_model.clean_lora()
+            for lora_path, strength_model in guider.model_patcher.lora_cache.items():
+                print(f"Applying Lora: {lora_path} with strength {strength_model}")
+                guider.model_patcher.model.diffusion_model.load_lora(lora_path, strength_model)
+
         samples = guider.sample(noise.generate_noise(latent), latent_image, sampler, sigmas, denoise_mask=noise_mask, callback=callback, disable_pbar=disable_pbar, seed=noise.seed)
         samples = samples.to(comfy.model_management.intermediate_device())
 
@@ -619,6 +626,10 @@ class SamplerCustomAdvanced:
             out_denoised["samples"] = guider.model_patcher.model.process_latent_out(x0_output["x0"].cpu())
         else:
             out_denoised = out
+        
+        if hasattr(guider.model_patcher.model.diffusion_model, 'clean_cache'):
+            guider.model_patcher.model.diffusion_model.clean_cache()
+        
         return (out, out_denoised)
 
 class AddNoise:
